@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word of the Day</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d0d;
+    color: #e8e4df;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .container {
+    max-width: 640px;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #8a8479;
+    margin-bottom: 2rem;
+  }
+
+  .word {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 2.2rem;
+    color: #ede9e3;
+    margin-bottom: 0.4rem;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .word.visible { opacity: 1; }
+
+  .phonetic {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 0.8rem;
+    color: #6b6560;
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.1s;
+  }
+
+  .phonetic.visible { opacity: 1; }
+
+  .part-of-speech {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7a756e;
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.2s;
+  }
+
+  .part-of-speech.visible { opacity: 1; }
+
+  .definition {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #b8b3ac;
+    margin-bottom: 1rem;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.3s;
+  }
+
+  .definition.visible { opacity: 1; }
+
+  .example {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #9a9590;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.4s;
+  }
+
+  .example.visible { opacity: 1; }
+
+  .divider {
+    width: 32px;
+    height: 1px;
+    background: #2a2725;
+    margin: 1.5rem auto 0;
+  }
+
+  .error {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 0.85rem;
+    color: #6b6560;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="label">Word of the Day</div>
+  <div class="word" id="word"></div>
+  <div class="phonetic" id="phonetic"></div>
+  <div class="part-of-speech" id="pos"></div>
+  <div class="definition" id="definition"></div>
+  <div class="example" id="example"></div>
+  <div class="divider"></div>
+</div>
+
+<script>
+const words = [
+  "ephemeral","solitude","resilience","equanimity","stoic","reverie","luminous",
+  "harbinger","serendipity","tenacity","sublime","eloquence","ethereal","sagacity",
+  "fortitude","paradigm","enigma","transcend","aplomb","melancholy","quintessence",
+  "ineffable","brevity","catalyst","discern","lucid","magnanimous","perseverance",
+  "prudence","sanguine","temperate","virtue","wisdom","zenith","ambiguity",
+  "benevolent","contemplation","deliberate","erudite","fervent","gravitas",
+  "humility","integrity","judicious","kinetic","languish","meticulous",
+  "nonchalant","obscure","pensive","quiescent","reticent","steadfast",
+  "taciturn","ubiquitous","venerate","wistful","austerity","candor",
+  "diligence","empirical","forbearance","gratitude","harmony","impetus",
+  "juxtapose","keen","lament","mundane","nuance","obstinate","placid",
+  "querulous","ruminate","solemn","tranquil","unassuming","valor","wane",
+  "ardent","beguile","cognizant","deft","exacting","fastidious","gregarious",
+  "heuristic","impartial","jocund","labyrinth","mercurial","nascent",
+  "omniscient","paragon","recondite","surreptitious","tangible","unequivocal",
+  "veracity","whimsical","acumen","blithe","circumspect","demeanor",
+  "ebullient","fidelity","halcyon","iconoclast","judicious","laconic",
+  "maverick","nexus","opulent","prescient","resolute","sentient","trenchant",
+  "utilitarian","vicissitude","aphorism","bucolic","concord","deference",
+  "esoteric","felicity","incandescent","juxtaposition","ken","magnanimity",
+  "nirvana","ostensible","palatable","quixotic","renaissance","sycophant",
+  "tantamount","verdant","affable","bellicose","cogent","dulcet","effervescent",
+  "formidable","idyllic","kinship","perspicacity","propensity","rarefied",
+  "scrupulous","torpid","unwavering","vestige","ameliorate","beseech",
+  "clandestine","didactic","ennui","fugacious","hegemony","impervious",
+  "languid","mitigate","obfuscate","pernicious","quandary","repudiate",
+  "soporific","trepidation","verisimilitude","abstruse","capacious",
+  "deleterious","exigent","insouciant","perspicacious","recalcitrant",
+  "sempiternal","acquiesce","concomitant","ephemeron","inchoate","lassitude",
+  "penumbra","redoubtable","supernal","susurrus","tmesis","coruscate",
+  "denouement","concatenation","palimpsest","syzygy","alexithymia",
+  "apophenia","eigengrau","komorebi","petrichor","sonder","vellichor",
+  "phosphene","chrysalism","liberosis","onism","jouska","kenopsia",
+  "altschmerz","rubatosis","occhiolism","opia","nodus","monachopsis",
+  "exulansis","ellipsism","adronitis","ambedo","anecdoche","anemoia",
+  "chrysalism","degrassé","ecstasis","enouement","exulansis","fitzwilliam",
+  "gnossienne","heartworm","jouska","kairosclerosis","kenopsia","kuebiko",
+  "liberosis","lachesism","mal de coucou","midding","moledro","momento",
+  "moriturism","nodus","olēka","onism","opia","ozurie","pâro",
+  "rigor samsa","rubatosis","silience","sonder","socha","thantifaxath",
+  "tichoschisis","vellichor","vemodalen","vemödalen","wytai","xeno",
+  "yu yi","zenosyne","anchorage","catoptric","defenestration","effulgent",
+  "lissome","mellifluous","numinous","opalescent","pellucid","quaff",
+  "resplendent","scintillate","sonorous","susurrant","diaphanous",
+  "crepuscular","liminal","umbral","gossamer","cerulean","aureate",
+  "lambent","dulcimer","seraphic","sidereal","telluric","empyrean",
+  "chthonic","sylvan","riparian","littoral","boreal","austral",
+  "vernal","estival","autumnal","hibernal","matutinal","vespertine",
+  "crepuscule","gloaming","eventide","dayspring","cockcrow","noontide",
+  "meridian","nadir","apogee","perigee","solstice","equinox",
+  "lunation","syzygy","ecliptic","parallax","aberration","precession",
+  "nutation","libration","occultation","transit","conjunction","opposition",
+  "quadrature","sextile","trine","quintile","semisextile","quincunx",
+  "stellium","cazimi","combust","detriment","exaltation","domicile",
+  "peregrine","dignified","debilitated","auspicious","propitious",
+  "felicitous","providential","fortuitous","serendipitous","kismet",
+  "providence","destiny","fate","moira","ananke","heimarmene","wyrd",
+  "orlog","hamingja","megin","hugr","hamr","fylgja","vardøger",
+  "doppelgänger","fetch","wraith","revenant","specter","phantasm",
+  "apparition","eidolon","simulacrum","effigy","vestige","palimpsest"
+];
+
+function getDayOfYear() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function getTodaysWord() {
+  const day = getDayOfYear();
+  return words[day % words.length];
+}
+
+async function fetchDefinition(word) {
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+function showElements() {
+  document.querySelectorAll('.word, .phonetic, .part-of-speech, .definition, .example')
+    .forEach(el => el.classList.add('visible'));
+}
+
+function showFallback(word) {
+  document.getElementById('word').textContent = word;
+  document.getElementById('phonetic').textContent = '';
+  document.getElementById('pos').textContent = '';
+  document.getElementById('definition').textContent = 'Look this one up — it\'s worth knowing.';
+  document.getElementById('example').textContent = '';
+  showElements();
+}
+
+async function init() {
+  const word = getTodaysWord();
+  const data = await fetchDefinition(word);
+
+  const wordEl = document.getElementById('word');
+  const phoneticEl = document.getElementById('phonetic');
+  const posEl = document.getElementById('pos');
+  const defEl = document.getElementById('definition');
+  const exampleEl = document.getElementById('example');
+
+  if (!data) {
+    showFallback(word);
+    return;
+  }
+
+  wordEl.textContent = data.word || word;
+
+  // Phonetic
+  const phonetic = data.phonetic || (data.phonetics && data.phonetics.find(p => p.text))?.text || '';
+  phoneticEl.textContent = phonetic;
+
+  // First meaning
+  const meaning = data.meanings && data.meanings[0];
+  if (meaning) {
+    posEl.textContent = meaning.partOfSpeech || '';
+
+    const def = meaning.definitions && meaning.definitions[0];
+    if (def) {
+      defEl.textContent = def.definition || '';
+      if (def.example) {
+        exampleEl.textContent = `"${def.example}"`;
+      }
+    }
+  }
+
+  showElements();
+}
+
+init();
+</script>
+</body>
+</html>
